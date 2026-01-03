@@ -8,6 +8,7 @@ import {
     StatusBar,
     NativeEventEmitter,
     NativeModules,
+    Alert,
 } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/NavigationTypes';
@@ -31,7 +32,12 @@ export default function NotificationsScreen({ navigation }: NotificationsScreenP
     const [notifications, setNotifications] = useState<NotificationItem[]>([]);
 
     useEffect(() => {
+        console.log('NotificationsScreen: Setting up notification listener');
+        checkPermission();
+
         const subscription = eventEmitter.addListener('onNotification', (data) => {
+            console.log('NotificationsScreen: Notification received!', data);
+
             const newNotification: NotificationItem = {
                 id: Date.now().toString(),
                 title: data.title ?? 'No Title',
@@ -40,6 +46,8 @@ export default function NotificationsScreen({ navigation }: NotificationsScreenP
                 timestamp: Date.now(),
             };
 
+            console.log('NotificationsScreen: Processing notification:', newNotification);
+
             // Announce with TTS
             announceNotification(newNotification.title, newNotification.text);
 
@@ -47,8 +55,29 @@ export default function NotificationsScreen({ navigation }: NotificationsScreenP
             setNotifications(prev => [newNotification, ...prev]);
         });
 
-        return () => subscription.remove();
+        return () => {
+            console.log('NotificationsScreen: Removing notification listener');
+            subscription.remove();
+        };
     }, []);
+
+    const checkPermission = async () => {
+        try {
+            const hasPermission = await NativeModules.NotificationPermission.checkNotificationAccess();
+            if (!hasPermission) {
+                Alert.alert(
+                    "Permission Required",
+                    "To monitor notifications, please grant Notification Access.",
+                    [
+                        { text: "Cancel", style: "cancel" },
+                        { text: "Open Settings", onPress: () => NativeModules.NotificationPermission.openNotificationAccessSettings() }
+                    ]
+                );
+            }
+        } catch (e) {
+            console.log("Error checking permission:", e);
+        }
+    };
 
     const clearAll = () => {
         setNotifications([]);

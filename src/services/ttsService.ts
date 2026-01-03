@@ -9,7 +9,7 @@ export const initializeTts = () => {
 
 // Announce notification with "Boss" prefix
 export const announceNotification = (title: string, text: string) => {
-    const announcement = `Boss, notification is there. ${title ?? ''}. ${text ?? ''}`;
+    const announcement = `Boss, this is the notification from ${title ?? 'unknown source'}. ${text ?? ''}`;
     Tts.stop();
     Tts.speak(announcement);
 };
