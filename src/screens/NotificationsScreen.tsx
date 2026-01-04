@@ -48,8 +48,8 @@ export default function NotificationsScreen({ navigation }: NotificationsScreenP
 
             console.log('NotificationsScreen: Processing notification:', newNotification);
 
-            // Announce with TTS
-            announceNotification(newNotification.title, newNotification.text);
+            // TTS is now handled by native NotificationService in background
+            // No need to call announceNotification here
 
             // Add to list
             setNotifications(prev => [newNotification, ...prev]);
